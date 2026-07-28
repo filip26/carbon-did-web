@@ -4,14 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Map;
 
+import com.apicatalog.did.Did;
 import com.apicatalog.did.DidDocument;
 import com.apicatalog.did.DidDocument.WithMetadata;
-import com.apicatalog.did.web.DidWebResolver.DocumentAdapter;
 
 public class DidWebHttpLoader implements DidWebResolver.Loader {
 
@@ -20,8 +19,13 @@ public class DidWebHttpLoader implements DidWebResolver.Loader {
         Map<String, Object> parseDocument(InputStream is) throws IOException;
     }
 
+    @FunctionalInterface
+    public interface DocumentAdapter {
+        DidDocument readDocument(Did did, Map<String, Object> document);
+    }
+
     private final DocumentParser parser;
-    private final DocumentAdapter mapAdapter;
+    private final DocumentAdapter adapter;
     private final HttpClient httpClient;
 
     private Duration timeout;
@@ -31,7 +35,7 @@ public class DidWebHttpLoader implements DidWebResolver.Loader {
             DocumentAdapter adapter,
             HttpClient httpClient) {
         this.parser = parser;
-        this.mapAdapter = adapter;
+        this.adapter = adapter;
         this.httpClient = httpClient;
         this.timeout = Duration.ofSeconds(1);
     }
@@ -52,10 +56,10 @@ public class DidWebHttpLoader implements DidWebResolver.Loader {
 
                 var map = parser.parseDocument(is);
 
-                var doc = mapAdapter.readDocument(did.toDid(), map);
+                var doc = adapter.readDocument(did.toDid(), map);
 
                 return new WithMetadata(
-                        ResponseMetadata.from(response), 
+                        DidWebMetadata.of(did, response),
                         doc);
             }
 
@@ -71,16 +75,4 @@ public class DidWebHttpLoader implements DidWebResolver.Loader {
     public Duration timeout() {
         return timeout;
     }
-
-    private static record ResponseMetadata(
-
-    ) implements DidDocument.Metadata {
-
-        static ResponseMetadata from(HttpResponse<InputStream> response) {
-            // TODO write some metadata
-            return new ResponseMetadata();
-        }
-
-    }
-
 }

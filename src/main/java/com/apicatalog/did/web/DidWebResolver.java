@@ -1,10 +1,8 @@
 package com.apicatalog.did.web;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import com.apicatalog.did.Did;
 import com.apicatalog.did.DidDocument;
 import com.apicatalog.did.DidDocument.Relationship;
 import com.apicatalog.did.DidUrl;
@@ -20,18 +18,8 @@ public class DidWebResolver implements
         DidDocument.Resolver {
 
     @FunctionalInterface
-    public interface DocumentAdapter {
-        DidDocument readDocument(Did did, Map<String, Object> document);
-    }
-
-    @FunctionalInterface
     public interface Loader {
         DidDocument.WithMetadata loadDocument(DidWeb did);
-    }
-
-    @FunctionalInterface
-    public interface MethodAdapter {
-        VerificationMethod readMethod(Collection<String> context, Map<String, Object> method);
     }
 
     public static final String DEFAULT_CONTEXT = "https://www.w3.org/ns/did/v1.1";

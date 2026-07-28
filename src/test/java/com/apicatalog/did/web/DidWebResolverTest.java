@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.apicatalog.did.DidUrl;
+import com.apicatalog.did.io.DidDocumentAdapter;
 import com.apicatalog.did.primitive.JsonWebKey;
 import com.apicatalog.did.primitive.MultiKey;
 import com.apicatalog.multibase.MultibaseDecoder;
@@ -29,6 +30,7 @@ class DidWebResolverTest {
 
     static HttpClient CLIENT = null;
     static MockServer SERVER = null;
+    static DidWebResolver.Loader LOADER = null;
 
     @BeforeAll
     static void startMockServer() throws IOException {
@@ -38,6 +40,16 @@ class DidWebResolverTest {
                 .followRedirects(Redirect.NEVER)
                 .connectTimeout(Duration.ofSeconds(1))
                 .build();
+
+        LOADER = new DidWebHttpLoader(
+                DidWebResolverTest::read,
+                new DidDocumentAdapter(
+                        _ -> true, // for testing purposes
+                        Map.of(MultiKey.TYPE_NAME, Map.entry(
+                                _ -> true, new MultiKey.MapAdapter(MultibaseDecoder.getInstance()::decode)::adapt),
+                                JsonWebKey.TYPE_NAME,
+                                Map.entry(_ -> true, JsonWebKey.MapAdapter::adapt)))::readDocument,
+                CLIENT);
     }
 
     @AfterAll
@@ -58,18 +70,9 @@ class DidWebResolverTest {
         var didWeb = DidWeb.parse(did);
         SERVER.setup(didWeb.url().getPath(), resource);
 
-        var loader = new DidWebHttpLoader(
-                DidWebResolverTest::read,
-                new DidWebAdapter(
-                        _ -> true, // for testing purposes
-                        Map.of("Multikey", Map.entry(
-                                _ -> true, new MultiKey.MapAdapter(MultibaseDecoder.getInstance()::decode)::adapt),
-                                "JsonWebKey", Map.entry(_ -> true, JsonWebKey.MapAdapter::adapt))),
-                CLIENT);
-
         var resolver = new DidWebResolver(
                 // for test purpose, need to rewrite the host
-                _didWeb -> loader.loadDocument(
+                _didWeb -> LOADER.loadDocument(
                         new DidWeb(
                                 URI.create(SERVER.baseUrl() + _didWeb.url().getPath()),
                                 _didWeb.methodSpecificId())));
@@ -77,6 +80,7 @@ class DidWebResolverTest {
         var resolved = resolver.resolve(DidUrl.parse(did), Map.of());
 
         assertNotNull(resolved);
+        IO.println(resolved);
     }
 
     static Map<String, Object> read(InputStream is) throws IOException {
@@ -89,6 +93,8 @@ class DidWebResolverTest {
         return Stream.of(
                 Arguments.of(
                         "did:web:example.com",
-                        "jwk-vector-1.json"));
+                        "jwk-vector-1.json",
+                        Map.of("expires", "Tue, 19 Jan 2038 03:14:07 GMT",
+                                "date", "Sun, 06 Nov 1994 08:49:37 GMT")));
     }
 }
