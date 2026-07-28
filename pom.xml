@@ -17,11 +17,10 @@
         <url>https://github.com/filip26/carbon-did-web/tree/main</url>
     </scm>
 
-    <name>Carbon DID Key Method</name>
+    <name>Carbon DID Web Method</name>
 
     <description>
-        An implementation of the W3C DID Method "did:key" for static
-        cryptographic keys. Supports Multikey and JsonWebKey representations.
+        An implementation of the W3C DID Method "did:web".
     </description>
 
     <licenses>
@@ -62,6 +61,7 @@
         <!-- test resources -->
         <copper.multicodec.version>3.1.0</copper.multicodec.version>
         <copper.multibase.version>4.1.0</copper.multibase.version>
+        <tree-io.version>1.0.0-M2</tree-io.version>
         <junit.version>6.1.0</junit.version>
     </properties>
     <dependencies>
@@ -70,6 +70,8 @@
             <artifactId>carbon-did</artifactId>
             <version>${carbon.did.version}</version>
         </dependency>
+
+        <!-- Tests -->
         <dependency>
             <groupId>com.apicatalog</groupId>
             <artifactId>copper-multibase</artifactId>
@@ -82,8 +84,18 @@
             <version>${copper.multicodec.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Tests -->
+        <dependency>
+            <groupId>com.apicatalog</groupId>
+            <artifactId>tree-io-api</artifactId>
+            <version>${tree-io.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.apicatalog</groupId>
+            <artifactId>tree-io-jackson2</artifactId>
+            <version>${tree-io.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

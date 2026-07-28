@@ -79,11 +79,15 @@ public record DidWeb(
 
         var domain = parts[0];
         var path = parts.length == 2
-                ? parts[1].replaceAll(":", "/")
+                ? Did.decode(parts[1].replaceAll(":", "/"))
                 : ".well-known";
 
         return new DidWeb(
-                URI.create("https://" + Did.decode(domain) + "/" + Did.decode(path) + "/did.json"),
+                URI.create("https://" + Did.decode(domain) + "/" + path + "/did.json"),
                 methodSpecificId);
+    }
+
+    public Did toDid() {
+        return new Did(METHOD_NAME, methodSpecificId);
     }
 }
