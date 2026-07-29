@@ -18,7 +18,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.apicatalog.did.DidUrl;
-import com.apicatalog.did.io.DidDocumentAdapter;
+import com.apicatalog.did.adapter.DidDocumentAdapter;
+import com.apicatalog.did.adapter.JsonWebKeyAdapter;
+import com.apicatalog.did.adapter.MultiKeyAdapter;
 import com.apicatalog.did.primitive.JsonWebKey;
 import com.apicatalog.did.primitive.MultiKey;
 import com.apicatalog.multibase.MultibaseDecoder;
@@ -43,12 +45,16 @@ class DidWebResolverTest {
 
         LOADER = new DidWebHttpLoader(
                 DidWebResolverTest::read,
-                new DidDocumentAdapter(
-                        _ -> true, // for testing purposes
-                        Map.of(MultiKey.TYPE_NAME, Map.entry(
-                                _ -> true, new MultiKey.MapAdapter(MultibaseDecoder.getInstance()::decode)::adapt),
-                                JsonWebKey.TYPE_NAME,
-                                Map.entry(_ -> true, JsonWebKey.MapAdapter::adapt)))::readDocument,
+                DidDocumentAdapter.newBuilder()
+                        .context(_ -> true)
+                        .method(MultiKey.TYPE_NAME,
+                                _ -> true,
+                                new MultiKeyAdapter(MultibaseDecoder.getInstance()::decode))
+                        .method(JsonWebKey.TYPE_NAME,
+                                _ -> true,
+                                new JsonWebKeyAdapter())
+                        .build()::readDocument,
+//                        Map.of(/*TODO service adapters */))::readDocument,
                 CLIENT);
     }
 
