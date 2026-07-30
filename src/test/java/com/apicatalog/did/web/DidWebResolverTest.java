@@ -21,8 +21,8 @@ import com.apicatalog.did.DidUrl;
 import com.apicatalog.did.adapter.DidDocumentAdapter;
 import com.apicatalog.did.adapter.JsonWebKeyAdapter;
 import com.apicatalog.did.adapter.MultiKeyAdapter;
-import com.apicatalog.did.primitive.JsonWebKey;
-import com.apicatalog.did.primitive.MultiKey;
+import com.apicatalog.did.method.JsonWebKey;
+import com.apicatalog.did.method.MultiKey;
 import com.apicatalog.multibase.MultibaseDecoder;
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.jakcson.Jackson2Parser;
@@ -46,15 +46,20 @@ class DidWebResolverTest {
         LOADER = new DidWebHttpLoader(
                 DidWebResolverTest::read,
                 DidDocumentAdapter.newBuilder()
-                        .context(_ -> true)
+                        .context(ctx -> ctx.contains("https://www.w3.org/ns/did/v1")
+                                || ctx.contains("https://www.w3.org/ns/did/v1.1rc1"))
+
                         .method(MultiKey.TYPE_NAME,
-                                _ -> true,
+                                ctx -> ctx.contains("https://www.w3.org/ns/did/v1.1rc1")
+                                        || ctx.contains("https://w3id.org/security/multikey/v1"),
                                 new MultiKeyAdapter(MultibaseDecoder.getInstance()::decode))
+
                         .method(JsonWebKey.TYPE_NAME,
-                                _ -> true,
+                                ctx -> ctx.contains("https://www.w3.org/ns/did/v1.1rc1")
+                                        || ctx.contains("https://w3id.org/security/jwk/v1"),
                                 new JsonWebKeyAdapter())
-                        .build()::readDocument,
-//                        Map.of(/*TODO service adapters */))::readDocument,
+
+                        .build()::mapDocument,
                 CLIENT);
     }
 

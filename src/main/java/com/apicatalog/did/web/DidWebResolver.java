@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.apicatalog.did.DidDocument;
 import com.apicatalog.did.DidDocument.Relationship;
+import com.apicatalog.did.method.VerificationMethod;
 import com.apicatalog.did.DidUrl;
-import com.apicatalog.did.VerificationMethod;
 
 /**
  * {@link DidResolver} implementation for the {@code did:web} method.
