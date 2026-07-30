@@ -19,8 +19,8 @@ public record DidWeb(
      * @param did the DID to test
      * @return {@code true} if the DID uses the {@code did:web} method
      */
-    public static boolean isDidWeb(Did di) {
-        return di != null && METHOD_NAME.equals(di.method());
+    public static boolean isDidWeb(Did did) {
+        return did != null && METHOD_NAME.equals(did.method());
     }
 
     /**
